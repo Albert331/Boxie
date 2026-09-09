@@ -1,14 +1,15 @@
-from ultralytics import YOLO
+
 import cv2
 import asyncio
 import threading
 import queue
 import json
 from websockets.asyncio.client import connect
-from hands import Hands
-from punch import Punch
-from stamina import Stamina
-from health import Health
+from game.hands import Hands
+from game.punch import Punch
+from game.stamina import Stamina
+from game.health import Health
+from models.onnx_model import run_inference,run_inference_timed
 
 outgoing = queue.Queue()
 incoming = queue.Queue()
@@ -21,7 +22,7 @@ def cv_loop():
     ZONE_X, ZONE_Y, ZONE_W, ZONE_H = 100, 50, 400, 400
     punch = Punch(ZONE_X, ZONE_Y, ZONE_W, ZONE_H)
 
-    model = YOLO("yolo26s-pose.pt")
+    
     cap = cv2.VideoCapture(0)
 
     stamina = Stamina()
@@ -41,10 +42,10 @@ def cv_loop():
             break
         frame = cv2.flip(frame, 1)
 
-        results = model(frame, verbose=False)[0]
-        keypoints = results.keypoints.xy
-        for person in keypoints:
-            person = person.cpu().numpy()
+        people = run_inference_timed(frame)
+        
+        for person in people:
+            person = person[:, :2]
 
             elbow_anglel = left_hand.calc(person)
             elbow_angler = right_hand.calc(person)

@@ -22,7 +22,7 @@ class Stamina:
 
     def block(self, person):
         if self.stamina == 0:
-            self.block_locked_out = True   # enter lockout
+            self.block_locked_out = True   
 
         if self.block_locked_out:
             if self.stamina >= self.min_stamina_to_block:

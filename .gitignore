@@ -3,3 +3,4 @@
 yolo26s-pose.pt
 yolov8n.pt
 best.pt
+/models/yolov26n-pose.onnx
