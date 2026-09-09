@@ -3,21 +3,25 @@ import json
 import random
 from websockets.asyncio.server import serve
 
-async def send_loop(websocket):
-    while True:
-        await websocket.send(json.dumps({"type": "punch"}))
-        print("Sent automated punch")
-        await asyncio.sleep(3)
-
-async def receive_loop(websocket):
-    async for message in websocket:
-        print(f"Got: {message}")
+connections = []  
 
 async def handler(websocket):
-    await asyncio.gather(send_loop(websocket), receive_loop(websocket))
+    connections.append(websocket)
+    print(f"Player connected ({len(connections)}/2)")
+
+    try:
+        async for message in websocket:
+            for peer in connections:
+                if peer != websocket:
+                    await peer.send(message)
+    finally:
+        connections.remove(websocket)
+        print(f"Player disconnected ({len(connections)}/2)")
+
+
 
 async def main():
-    async with serve(handler, "localhost", 8001) as server:
+    async with serve(handler, "", 8001) as server:
         print("Server running on ws://localhost:8001")
         await server.serve_forever()
 

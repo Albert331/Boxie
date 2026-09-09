@@ -118,6 +118,11 @@ def cv_loop():
     cap.release()
     cv2.destroyAllWindows()
 
+SERVER_IP = "localhost" 
+inp = input('enter the game url or press enter if none')
+if inp:
+    SERVER_IP = inp
+   
 async def send_loop(ws):
     while True:
         if not outgoing.empty():
@@ -130,7 +135,7 @@ async def receive_loop(ws):
         incoming.put(json.loads(message))        
 
 async def network_main():
-    async with connect("ws://localhost:8001") as ws:
+    async with connect(SERVER_IP) as ws:
         await asyncio.gather(send_loop(ws), receive_loop(ws))
         
 
