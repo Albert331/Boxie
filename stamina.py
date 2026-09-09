@@ -5,6 +5,8 @@ class Stamina:
         self.block_stamina_reduction = 0.5
         self.stamina_regen = 0.5
         self.is_blocking = False
+        self.block_locked_out = False
+        self.min_stamina_to_block = 10
 
     @staticmethod
     def pose_calc(person):
@@ -20,8 +22,13 @@ class Stamina:
 
     def block(self, person):
         if self.stamina == 0:
-            self.is_blocking = False
-            return
+            self.block_locked_out = True   # enter lockout
+
+        if self.block_locked_out:
+            if self.stamina >= self.min_stamina_to_block:
+                self.block_locked_out = False   
+                self.is_blocking = False
+                return
 
         self.is_blocking = self.pose_calc(person)
         if self.is_blocking:
