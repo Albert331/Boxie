@@ -2,18 +2,18 @@ class Stamina:
     def __init__(self, max_stamina=100):
         self.stamina = max_stamina
         self.punch_stamina_reduction = 20
-        self.block_stamina_reduction = 0.1
+        self.block_stamina_reduction = 0.5
         self.stamina_regen = 0.5
         self.is_blocking = False
 
     @staticmethod
     def pose_calc(person):
-        if person[9][1] > person[0][1] and person[10][1] > person[0][1]:
+        if person[9][1] < person[0][1] and person[10][1] < person[0][1]:
             return True
         return False
 
     def punch(self):
-        if self.stamina == 0:
+        if self.stamina == 0 or self.stamina < self.punch_stamina_reduction:
             return False
         self.stamina = max(0, self.stamina - self.punch_stamina_reduction)
         return True

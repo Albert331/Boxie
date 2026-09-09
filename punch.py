@@ -15,14 +15,14 @@ class Punch():
                 print('PUNCHEDDD from the lefttt!!!')
                 self.punched_left = True
                 return True
-        
+            
         if 100>angle_right>70 and not self.punched_right:
             x_right,y_right = wristr
             if (self.x <= x_right <= self.x + self.w) and (self.y <= y_right<=self.y+ self.h):
                 print('PUNCHEDDD from the righttt!!!')
                 self.punched_right = True
                 return True
-            
+        return False
     def reset(self,angle_left,angle_right,wristl,wristr):
         if angle_left<40 and self.punched_left:
             x_left,y_left = wristl

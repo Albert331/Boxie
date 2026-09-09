@@ -27,9 +27,9 @@ cv2.resizeWindow("camera", 1280, 720)
 
 while True:
     ret, frame = cap.read()
-    frame = cv2.flip(frame, 1)
     if not ret:
         break
+    frame = cv2.flip(frame, 1)
 
     results = model(frame, verbose=False)[0]
     keypoints = results.keypoints.xy
@@ -42,7 +42,8 @@ while True:
         punched = punch.see_punch(elbow_anglel, elbow_angler, person[9], person[10])
 
         if punched :
-            punched = stamina.punch()
+            stamina.punch()
+
 
         stamina.block(person)
         print(stamina.stamina)
