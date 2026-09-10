@@ -4,7 +4,7 @@ import onnxruntime as ort
 
 
 session = ort.InferenceSession(
-    "yolo26n-pose.onnx",
+    "models/yolo26n-pose.onnx",
     providers=["CPUExecutionProvider"]
 )
 input_name = session.get_inputs()[0].name

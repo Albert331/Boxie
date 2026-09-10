@@ -10,6 +10,7 @@ from game.punch import Punch
 from game.stamina import Stamina
 from game.health import Health
 from models.onnx_model import run_inference,run_inference_timed
+from ui import render
 
 outgoing = queue.Queue()
 incoming = queue.Queue()
@@ -24,7 +25,7 @@ def cv_loop():
 
     
     cap = cv2.VideoCapture(0)
-
+    
     stamina = Stamina()
     health = Health()
 
@@ -33,8 +34,7 @@ def cv_loop():
         print("cant open camera")
         exit()
 
-    cv2.namedWindow("camera", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("camera", 1280, 720)
+    
 
     while True:
         ret, frame = cap.read()
@@ -42,7 +42,7 @@ def cv_loop():
             break
         frame = cv2.flip(frame, 1)
 
-        people = run_inference_timed(frame)
+        people = run_inference(frame)
         
         for person in people:
             person = person[:, :2]
@@ -68,77 +68,58 @@ def cv_loop():
                 print(f"Opponent did: {opp_event}")
                 if opp_event['type'] == 'punch' and not stamina.is_blocking:
                     health.take_damage()
-            
+                
+                    
             print(f"\rhealth {health.health:<3} stamina {stamina.stamina:<3} stance {'blocking' if stamina.is_blocking else 'normal'}", end="", flush=True)
-            for points in person:
+            
 
-                x, y = points
+            xl, yl = person[9]
+            xr, yr = person[10]
+            xl *= 1280 / 640
+            yl *= 720 / 480
+            xr *= 1280 / 640
+            yr *= 720 / 480
 
-                x = int(x)
-                y = int(y)
+            xl,xr = int(xl),int(xr)
+            yl,yr = int(yl),int(yr)
 
-                if x > 0 and y > 0:
+            if xl > 0 and yl > 0 and xr >0 and yr >0:
+                render(xl,yl,elbow_anglel,xr,yr,elbow_angler)
                     
-                    cv2.circle(frame, (x, y), 6, (0, 0, 255), -1)
                     
-                    cv2.putText(
-                        frame,
-                        f"{elbow_anglel} Deg",
-                        (10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        (255, 0, 0),
-                        2,
-                    )
-                    cv2.putText(
-                        frame,
-                        f"{elbow_angler} Deg",
-                        (200, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        (255, 0, 0),
-                        2,
-                    )
-                    cv2.rectangle(
-                        frame,
-                        (ZONE_X, ZONE_Y),
-                        (ZONE_X + ZONE_W, ZONE_Y + ZONE_H),
-                        color=(0, 255, 0), 
-                        thickness=2,  
-                    )
 
-            punch.reset(elbow_anglel, elbow_angler, person[9], person[10])
-            stamina.regen()
+        punch.reset(elbow_anglel, elbow_angler, person[9], person[10])
+        stamina.regen()
 
-        cv2.imshow("camera", frame)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+        
 
 
     cap.release()
     cv2.destroyAllWindows()
 
-SERVER_IP = "localhost" 
-inp = input('enter the game url or press enter if none')
-if inp:
-    SERVER_IP = inp
+# SERVER_IP = "localhost" 
+# inp = input('enter the game url or press enter if none')
+# if inp:
+#     SERVER_IP = inp
    
-async def send_loop(ws):
-    while True:
-        if not outgoing.empty():
-            event = outgoing.get()
-            await ws.send(json.dumps(event))
-        await asyncio.sleep(0.01)
+# async def send_loop(ws):
+#     while True:
+#         if not outgoing.empty():
+#             event = outgoing.get()
+#             await ws.send(json.dumps(event))
+#         await asyncio.sleep(0.01)
 
-async def receive_loop(ws):
-    async for message in ws:
-        incoming.put(json.loads(message))        
+# async def receive_loop(ws):
+#     async for message in ws:
+#         incoming.put(json.loads(message))        
 
-async def network_main():
-    async with connect(SERVER_IP) as ws:
-        await asyncio.gather(send_loop(ws), receive_loop(ws))
+# async def network_main():
+#     async with connect(SERVER_IP) as ws:
+#         await asyncio.gather(send_loop(ws), receive_loop(ws))
         
 
 if __name__ == "__main__":
     threading.Thread(target=cv_loop, daemon=True).start()
-    asyncio.run(network_main())        
+    # asyncio.run(network_main())   
+    while True:
+        pass     
